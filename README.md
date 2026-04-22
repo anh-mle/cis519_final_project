@@ -11,10 +11,11 @@ project-b-news-classifier/
 ├── requirements.txt      # Python dependencies (scikit-learn, torch, pandas, etc.)
 │
 └── data/
-    ├── headlines_sample.csv   # Dummy data for training
-    ├── headlines_scraped.csv  # Headlines scraped from Fox/NBC URLs.
-    ├── val_sample.csv         # Held-out validation split - need to update this to run against the valuation script
-from a list of URLs (TODO: Update this script)
+    ├── headlines_scraped.csv           # Headlines scraped from Fox/NBC URLs provided in        url_only_data.csv. This dataset is used to run the evaluation scrip
+    ├── gnews_headlines_full.csv        # Headlines scraped from Google News RSS Feed with Fox News and NBC News. This file is used to train the data
+    ├── collect_urls.py                 # Script to collect url from Google News RSS Feed with Fox News and NBC News. Output is gnews_headlines_full.csv
+    └── urls_data_only.csv              # Provided dataset
+
 ```
 
 **Label convention:** `0` = Fox News, `1` = NBC News.
@@ -42,7 +43,7 @@ python model.py --data data/headlines_scraped.csv
 To train on the dummy sample dataset instead:
 
 ```bash
-python model.py --data data/headlines_sample.csv
+python model.py --data data/gnews_headlines_full.csv
 ```
 
 ## 4. Running the Eval Script
@@ -53,7 +54,7 @@ cd /home/ubuntu/project-b-news-classifier
 python eval_project_b.py \
     --model      model.py \
     --preprocess preprocess.py \
-    --csv        data/val_sample.csv
+    --csv        data/headlines_scraped.csv
 ```
 
 **Optional flags:**
