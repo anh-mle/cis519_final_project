@@ -8,23 +8,35 @@ import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.pipeline import FeatureUnion, Pipeline
 
 _DEFAULT_WEIGHTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model.joblib")
 
-
 class NewsClassifier:
-    def __init__(self, weights_path: str | None = None) -> None:
-        self.pipeline = Pipeline([
-            ("tfidf", TfidfVectorizer(
-                max_features=10000,
-                stop_words="english",
-            )),
-            ("clf", LogisticRegression(
-                max_iter=1000,
-            )),
+    @staticmethod
+    def _build_pipeline() -> Pipeline:
+        return Pipeline([
+            ("features", FeatureUnion([
+                ("word", TfidfVectorizer(
+                    max_features=10000,
+                    stop_words="english",
+                    ngram_range=(1, 2),
+                    min_df=5,
+                    max_df=0.7,
+                )),
+                ("char", TfidfVectorizer(
+                    max_features=10000,
+                    analyzer="char_wb",
+                    ngram_range=(3, 5),
+                    min_df=5,
+                )),
+            ])),
+            ("clf", LogisticRegression(max_iter=1000, C=1.0)),
         ])
+
+    def __init__(self, weights_path: str | None = None) -> None:
+        self.pipeline = self._build_pipeline()
         self._trained = False
 
         sentinel = "__no_weights__.pth"
@@ -68,8 +80,16 @@ class NewsClassifier:
         )
         print(f"  Train: {len(X_train)}   Val: {len(X_val)}")
 
-        print("\nFitting pipeline...")
-        self.pipeline.fit(X_train, y_train)
+        self.pipeline = self._build_pipeline()
+        param_grid = {"clf__C": [0.01, 0.1, 1.0, 10.0]}
+        print("\nRunning GridSearchCV (3-fold, 4 combinations)...")
+        grid = GridSearchCV(
+            self.pipeline, param_grid, cv=3, scoring="accuracy", n_jobs=-1, verbose=1, refit=True
+        )
+        grid.fit(X_train, y_train)
+        print(f"Best params : {grid.best_params_}")
+        print(f"Best CV acc : {grid.best_score_:.4f}")
+        self.pipeline = grid.best_estimator_
         self._trained = True
 
         y_pred = self.predict(X_val)
@@ -89,7 +109,7 @@ def get_model() -> NewsClassifier:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data", default="data/headlines_scraped.csv")
+    parser.add_argument("--data", default="data/gnews_headlines_full.csv")
     args = parser.parse_args()
 
     classifier = NewsClassifier(weights_path="__no_weights__.pth")
