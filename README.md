@@ -33,16 +33,6 @@ Run from the `project-b-news-classifier/` directory:
 
 ```bash
 cd /home/ubuntu/project-b-news-classifier
-python model.py --data data/headlines_scraped.csv
-```
-
-- Reads the CSV, splits 80/20 train/val, fits the TF-IDF + Logistic Regression pipeline.
-- Prints validation accuracy and a full classification report.
-- Saves the trained pipeline to `model.joblib` in the same directory.
-
-To train on the dummy sample dataset instead:
-
-```bash
 python model.py --data data/gnews_headlines_full.csv
 ```
 
