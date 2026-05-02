@@ -53,3 +53,6 @@ python eval_project_b.py \
 |---|---|---|
 | `--weights` | *(none)* | Path to a `.pt` checkpoint to load into a PyTorch model |
 | `--batch-size` | `32` | Batch size for inference |
+
+## Hugging Face Leader Board
+https://huggingface.co/spaces/cis4190/NewsHeadlineClassifier
