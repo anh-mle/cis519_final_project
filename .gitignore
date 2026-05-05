@@ -49,5 +49,3 @@ Thumbs.db
 # Logs
 *.log
 logs/
-.claude/
-.claude.json

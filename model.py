@@ -10,7 +10,7 @@ import torch.nn as nn
 _SEQ_LEN  = 80
 _EMB_DIM  = 128
 _HID_DIM  = 256
-_N_LAYERS = 2
+_N_LAYERS = 3
 _DROP_P   = 0.40
 _N_CLS    = 2
 
@@ -62,24 +62,10 @@ class _SpatialDropout(nn.Module):
         return x * mask
 
 
-class _Attention(nn.Module):
-    """Bahdanau (tanh) attention over BiLSTM hidden states."""
-    def __init__(self, hid: int):
-        super().__init__()
-        self.W = nn.Linear(hid * 2, hid, bias=False)
-        self.v = nn.Linear(hid, 1,       bias=False)
-
-    def forward(self, h: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
-        scores = self.v(torch.tanh(self.W(h))).squeeze(-1)
-        scores = scores.masked_fill(x == Vocab.PAD, -1e9)
-        w = torch.softmax(scores, dim=-1)
-        return (w.unsqueeze(-1) * h).sum(1)
-
-
 # ── BiLSTM ─────────────────────────────────────────────────────────────────────
 
 class _BiLSTM(nn.Module):
-    """Embedding → SpatialDrop → Bi-LSTM → (attn + max + mean) pool → MLP → logits."""
+    """Embedding → SpatialDrop → Bi-LSTM → mean pool → Linear → logits."""
 
     def __init__(self, vsz: int, emb: int, hid: int, layers: int, drop: float, n_cls: int):
         super().__init__()
@@ -88,16 +74,7 @@ class _BiLSTM(nn.Module):
         self.rnn      = nn.LSTM(emb, hid, layers,
                                 batch_first=True, bidirectional=True,
                                 dropout=drop if layers > 1 else 0.)
-        self.attn     = _Attention(hid)
-        feat = hid * 6
-        self.classifier = nn.Sequential(
-            nn.LayerNorm(feat),
-            nn.Dropout(drop),
-            nn.Linear(feat, hid),
-            nn.GELU(),
-            nn.Dropout(drop),
-            nn.Linear(hid, n_cls),
-        )
+        self.classifier = nn.Linear(hid * 2, n_cls)
 
     def forward(self, x: torch.Tensor, sl: torch.Tensor) -> torch.Tensor:
         e      = self.emb_drop(self.emb(x))
@@ -108,12 +85,9 @@ class _BiLSTM(nn.Module):
             out, batch_first=True, total_length=x.size(1))
 
         pad_mask = (x == Vocab.PAD)
-        z_attn = self.attn(out, x)
-        z_max  = out.masked_fill(pad_mask.unsqueeze(-1), -1e9).max(1).values
-        lens   = sl.float().clamp(min=1).unsqueeze(-1).to(out.device)
-        z_mean = out.masked_fill(pad_mask.unsqueeze(-1), 0.).sum(1) / lens
-
-        return self.classifier(torch.cat([z_attn, z_max, z_mean], dim=-1))
+        lens = sl.float().clamp(min=1).unsqueeze(-1).to(out.device)
+        z    = out.masked_fill(pad_mask.unsqueeze(-1), 0.).sum(1) / lens
+        return self.classifier(z)
 
 
 # ── Vocab builder ──────────────────────────────────────────────────────────────
