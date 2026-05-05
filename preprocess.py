@@ -34,7 +34,6 @@ def prepare_data(path: str) -> Tuple[List[str], List[int]]:
     if "headline" not in df.columns:
         raise ValueError("CSV must contain 'headline' column")
 
-    # 🔥 fix: handle missing values
     df["headline"] = df["headline"].fillna("").astype(str).apply(clean_text)
 
     df["label"] = df["url"].apply(extract_label)
