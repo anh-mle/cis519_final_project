@@ -7,9 +7,9 @@ Binary classification of news article URLs as **Fox News** or **NBC News** using
 
 | Model | Validation Accuracy | Leaderboard Accuracy | Avg Inference Time |
 |---|---|---|---|
-| Logistic Regression (baseline) | [TBD] | [TBD] | [TBD] |
+| Logistic Regression (baseline) | 84.9% | | |
 | Bidirectional GRU | [TBD] | [TBD] | [TBD] |
-| Bidirectional LSTM | [TBD] | [TBD] | [TBD] |
+| Bidirectional LSTM | 91.03% | | |
 | **DistilBERT** | **[TBD]** | **[TBD]** | **12.23 ms** |
 
 Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHeadlineClassifier)
@@ -40,13 +40,17 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 [Todo: Soojin]
 
 ### Bidirectional LSTM
-[Todo: Anh]
+```
+Embedding (vocab × 128) → SpatialDropout(p=0.40) → Bidirectional LSTM — 3 layers → Mean Pooling → Linear Classifier.
+```
 
 ### Bidirectional GRU
 [Todo: Tiffany]
 
 ### Logistic Regression (baseline)
-[Todo: Anyone pls!]
+```
+TF-IDF Unigrams + TF-IDF Bigrams/Trigrams → FeatureUnion (concat) → LogisticRegression (max_iter=1000)
+```
 
 ---
 
