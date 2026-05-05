@@ -48,7 +48,7 @@ Embedding (vocab × 256) → Bi-LSTM (2 layers, hid=256) → last hidden state �
 | 2 | `emb_dim` 256 → 128, `drop_p` 0.3 → 0.45, label smoothing 0.1, early stopping | ~82% / 81% | Regularisation holding; bottleneck shifts to capacity |
 | 3 | `SpatialDropout` on embeddings, triple pooling (attn + max + mean), MLP head, Bahdanau attention | ~82% / 81% | Richer features but no accuracy gain — data is the ceiling |
 | 4 | Data: raw headlines → URL slugs (`url_8k_output.csv`), 3,804 → 8,000 samples | **90.83%** | Major jump; cleaner vocabulary and more data broke the ceiling |
-| 5 | `n_layers` 2 → 3 | — | Extra LSTM layer; not yet retrained |
+| 5 | `n_layers` 2 → 3 | 91.03%  | Extra LSTM layer |
 
 ---
 
