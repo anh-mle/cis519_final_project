@@ -8,12 +8,13 @@ Binary classification of news article URLs as **Fox News** or **NBC News** using
 
 | Model | Validation Accuracy | Leaderboard Accuracy | Avg Inference Time |
 |---|---|---|---|
-| Logistic Regression (baseline) | 84.9% | | |
-| Bidirectional GRU | [TBD] | [TBD] | [TBD] |
-| Bidirectional LSTM | 91.03% | | |
-| **DistilBERT** | **99.92%** | | **12.23 ms** |
+| Logistic Regression (baseline) | 84.9% | — | — |
+| Bidirectional GRU | 91.76% | 87.67% | 0.28 |
+| Bidirectional LSTM | 91.03% | — | — |
+| **DistilBERT** | **99.92%** | **99.33%** | **12.23 ms** |
 
 Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHeadlineClassifier)
+
 
 ---
 
@@ -108,9 +109,11 @@ from model import Model
 import torch
 
 model = Model()
-model.load_state_dict(torch.load('model.pt', map_location='cpu'))
+state = torch.load("model.pt", map_location="cpu")
+model.load_state_dict(state, strict=False)
 model.eval()
-print(model.predict(['senate passes major legislation', 'world']))
+
+print(model.predict(["senate passes major legislation", "world"]))
 # ['foxnews', 'nbcnews']
 ```
 
@@ -120,7 +123,7 @@ python3 scripts/build_dataset.py                   # 4k+4k = 8k URLs
 python3 scripts/build_dataset.py --per-source 6000 # larger run
 ```
 
-**Train** — upload `combined_url_balanced_8k.xlsx` to Google Colab, open `News_Classifier_Training.ipynb`, set `Config.DATA_PATH`, and run all cells. Download `model.pt` when done.
+**Train** — upload `combined_url_balanced_8k.csv` to Google Colab, open `News_Classifier_Training.ipynb`, set `Config.DATA_PATH`, and run all cells. Download `model.pt` when done.
 
 **Evaluate**
 ```bash
