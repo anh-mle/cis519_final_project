@@ -9,47 +9,98 @@ The evaluator will:
 4. call model.predict(batch)
 """
 
+import os
+import re
+from typing import Any, Iterable, List
+
 import torch
 import torch.nn as nn
-import pickle
-from typing import List, Iterable, Any
+
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_CKPT = os.path.join(_HERE, "model.pt")
 
 
 class Model(nn.Module):
     ID_TO_LABEL = {0: "foxnews", 1: "nbcnews"}
 
-    def __init__(self):
+    def __init__(self, weights_path: str = None):
         super().__init__()
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        # Load vocab
-        with open("vocab.pkl", "rb") as f:
-            self.vocab = pickle.load(f)
+        ckpt = torch.load(_CKPT, map_location=self.device)
 
-        self.embedding = nn.Embedding(len(self.vocab), 128, padding_idx=0)
-        self.gru = nn.GRU(128, 128, batch_first=True, bidirectional=True)
-        self.classifier = nn.Linear(256, 2)
+        self.vocab = ckpt["vocab"]
+        config = ckpt["config"]
 
+        self.max_len = config["max_len"]
+
+        self.embedding = nn.Embedding(
+            len(self.vocab),
+            config["embed_dim"],
+            padding_idx=0
+        )
+
+        self.gru = nn.GRU(
+            input_size=config["embed_dim"],
+            hidden_size=config["hidden_dim"],
+            num_layers=config["num_layers"],
+            batch_first=True,
+            bidirectional=True,
+            dropout=config["dropout"] if config["num_layers"] > 1 else 0
+        )
+
+        self.dropout = nn.Dropout(config["dropout"])
+        self.classifier = nn.Linear(config["hidden_dim"] * 2, config["num_classes"])
+
+        self.load_state_dict(ckpt["model"])
         self.to(self.device)
+        self.eval()
 
-    def encode(self, text):
-        tokens = str(text).lower().split()
-        ids = [self.vocab.get(t, 1) for t in tokens][:40]
+    def tokenize(self, text: str):
+        text = str(text).lower()
+        return re.findall(r"[a-z0-9']+", text)
 
-        while len(ids) < 40:
-            ids.append(0)
+    def encode(self, text: str):
+        tokens = self.tokenize(text)
+
+        ids = [
+            self.vocab.get(token, self.vocab.get("<UNK>", 1))
+            for token in tokens
+        ]
+
+        ids = ids[:self.max_len]
+
+        while len(ids) < self.max_len:
+            ids.append(self.vocab.get("<PAD>", 0))
 
         return ids
 
+    def forward(self, input_ids):
+        embedded = self.embedding(input_ids)
+        output, hidden = self.gru(embedded)
+
+        forward_hidden = hidden[-2]
+        backward_hidden = hidden[-1]
+
+        combined = torch.cat((forward_hidden, backward_hidden), dim=1)
+        combined = self.dropout(combined)
+
+        logits = self.classifier(combined)
+        return logits
+
     def predict(self, batch: Iterable[Any]) -> List[str]:
-        inputs = [self.encode(x) for x in batch]
-        input_ids = torch.tensor(inputs).to(self.device)
+        texts = [str(x) for x in batch]
+
+        if len(texts) == 0:
+            return []
+
+        encoded = [self.encode(text) for text in texts]
+        input_ids = torch.tensor(encoded, dtype=torch.long).to(self.device)
 
         with torch.no_grad():
-            output, hidden = self.gru(self.embedding(input_ids))
-            h = torch.cat((hidden[-2], hidden[-1]), dim=1)
-            logits = self.classifier(h)
+            logits = self.forward(input_ids)
             preds = torch.argmax(logits, dim=-1).cpu().tolist()
 
         return [self.ID_TO_LABEL[p] for p in preds]
