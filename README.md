@@ -1,6 +1,7 @@
 # News Source Classification: Fox News vs NBC News
 
 Binary classification of news article URLs as **Fox News** or **NBC News** using headline text extracted from the URL slug. We compare a fine-tuned DistilBERT model against recurrent architectures (Bidirectional LSTM, Bidirectional GRU) and a Logistic Regression baseline.
+
 ---
 
 ## Results
