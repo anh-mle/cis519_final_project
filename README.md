@@ -130,6 +130,5 @@ python3 eval_project_b.py \
 
 - Sanh, V., et al. (2019). [DistilBERT, a distilled version of BERT](https://arxiv.org/abs/1910.01108). arXiv:1910.01108.
 - Zhou, P., et al. (2016). [Text Classification with Bidirectional LSTM and Two-dimensional Max Pooling](https://arxiv.org/abs/1611.06639). arXiv:1611.06639.
-- Todo: add more reference
 - Fox News Sitemap: https://www.foxnews.com/sitemap.xml
 - NBC News Sitemap: https://www.nbcnews.com/sitemap/nbcnews/sitemap-index
