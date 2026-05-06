@@ -10,7 +10,7 @@ Binary classification of news article URLs as **Fox News** or **NBC News** using
 | Logistic Regression (baseline) | 84.9% | | |
 | Bidirectional GRU | [TBD] | [TBD] | [TBD] |
 | Bidirectional LSTM | 91.03% | | |
-| **DistilBERT** | **[TBD]** | **[TBD]** | **12.23 ms** |
+| **DistilBERT** | **99.92%** | | **12.23 ms** |
 
 Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHeadlineClassifier)
 
@@ -37,7 +37,11 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 ## Model Architecture
 
 ### DistilBERT
-[Todo: Soojin]
+```
+DistilBERT encoder (6 layers, 768 hidden, 12 heads) → [CLS] token → Dropout(p=0.1) → Linear(768 → 2)
+```
+
+Fine-tuned end-to-end (all encoder layers unfrozen) with AdamW (`lr=2e-5`, `weight_decay=0.01`), batch size 32, 3 epochs, linear warmup over 10% of steps, gradient clipping at max-norm 1.0. Input is the cleaned URL slug, max length 128 tokens. Training takes ~6 minutes on a Tesla T4 GPU.
 
 ### Bidirectional LSTM
 ```
