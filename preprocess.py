@@ -3,16 +3,29 @@ import re
 from typing import List, Tuple
 
 
-def clean_text(text: str) -> str:
-    text = str(text).lower()
-    text = re.sub(r"\s+", " ", text)
-    text = re.sub(r"[^a-zA-Z0-9\s']", " ", text)
-    return text.strip()
-
-
-def extract_label(url: str) -> int:
+def extract_label_from_url(url: str) -> int:
     url = str(url).lower()
     return 0 if "foxnews.com" in url else 1
+
+
+def slug_to_text(url: str) -> str:
+    url = str(url).split("?")[0].rstrip("/")
+    parts = [p for p in url.split("/") if p]
+
+    if not parts:
+        return ""
+
+    slug = parts[-1]
+
+    # NBC sometimes ends with rcna ID
+    if re.search(r"rcna\d+", slug.lower()) and len(parts) >= 2:
+        slug = parts[-2]
+
+    slug = slug.replace("-", " ").replace("_", " ")
+    slug = re.sub(r"[^a-zA-Z0-9\s']", " ", slug)
+    slug = re.sub(r"\s+", " ", slug).strip().lower()
+
+    return slug
 
 
 def prepare_data(path: str) -> Tuple[List[str], List[int]]:
@@ -31,16 +44,15 @@ def prepare_data(path: str) -> Tuple[List[str], List[int]]:
     """
     df = pd.read_csv(path)
 
-    if "headline" not in df.columns:
-        raise ValueError("CSV must contain 'headline' column")
+    if "url" not in df.columns:
+        raise ValueError("CSV must contain a 'url' column")
 
-    df["headline"] = df["headline"].fillna("").astype(str).apply(clean_text)
+    df["text"] = df["url"].apply(slug_to_text)
+    df["label"] = df["url"].apply(extract_label_from_url)
 
-    df["label"] = df["url"].apply(extract_label)
+    df = df[df["text"].str.len() > 5].reset_index(drop=True)
 
-    df = df[df["headline"].str.len() > 5].reset_index(drop=True)
-
-    X = df["headline"].tolist()
+    X = df["text"].tolist()
     y = df["label"].tolist()
 
     return X, y
