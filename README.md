@@ -7,10 +7,10 @@ Binary classification of news article URLs as **Fox News** or **NBC News** using
 
 | Model | Validation Accuracy | Leaderboard Accuracy | Avg Inference Time |
 |---|---|---|---|
-| Logistic Regression (baseline) | [TBD] | [TBD] | [TBD] |
+| Logistic Regression (baseline) | 84.9% | | |
 | Bidirectional GRU | [TBD] | [TBD] | [TBD] |
-| Bidirectional LSTM | [TBD] | [TBD] | [TBD] |
-| **DistilBERT** | **[TBD]** | **[TBD]** | **12.23 ms** |
+| Bidirectional LSTM | 91.03% | | |
+| **DistilBERT** | **99.92%** | | **12.23 ms** |
 
 Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHeadlineClassifier)
 
@@ -37,16 +37,24 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 ## Model Architecture
 
 ### DistilBERT
-[Todo: Soojin]
+```
+DistilBERT encoder (6 layers, 768 hidden, 12 heads) → [CLS] token → Dropout(p=0.1) → Linear(768 → 2)
+```
+
+Fine-tuned end-to-end (all encoder layers unfrozen) with AdamW (`lr=2e-5`, `weight_decay=0.01`), batch size 32, 3 epochs, linear warmup over 10% of steps, gradient clipping at max-norm 1.0. Input is the cleaned URL slug, max length 128 tokens. Training takes ~6 minutes on a Tesla T4 GPU.
 
 ### Bidirectional LSTM
-[Todo: Anh]
+```
+Embedding (vocab × 128) → SpatialDropout(p=0.40) → Bidirectional LSTM — 3 layers → Mean Pooling → Linear Classifier.
+```
 
 ### Bidirectional GRU
 [Todo: Tiffany]
 
 ### Logistic Regression (baseline)
-[Todo: Anyone pls!]
+```
+TF-IDF Unigrams + TF-IDF Bigrams/Trigrams → FeatureUnion (concat) → LogisticRegression (max_iter=1000)
+```
 
 ---
 
