@@ -33,8 +33,8 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 ├── confusion.png                     # Confusion matrix
 ├── comparison.png                    # Model comparison visualization
 └── data/
-    ├── combined_url_balanced_8k.csv # Final dataset (8k URLs, balanced)
-    └── url_only_data.csv            # Provided dataset
+    ├── combined_url_balanced_8k.csv  # Final dataset (8k URLs, balanced)
+    └── url_only_data.csv             # Provided dataset
 ```
 
 ---
