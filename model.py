@@ -52,7 +52,10 @@ class Model(nn.Module):
         )
 
         self.dropout = nn.Dropout(config["dropout"])
-        self.classifier = nn.Linear(config["hidden_dim"] * 2, config["num_classes"])
+        self.classifier = nn.Linear(
+            config["hidden_dim"] * 2,
+            config["num_classes"]
+        )
 
         self.load_state_dict(ckpt["model"])
         self.to(self.device)
@@ -87,13 +90,12 @@ class Model(nn.Module):
         combined = torch.cat((forward_hidden, backward_hidden), dim=1)
         combined = self.dropout(combined)
 
-        logits = self.classifier(combined)
-        return logits
+        return self.classifier(combined)
 
     def predict(self, batch: Iterable[Any]) -> List[str]:
         texts = [str(x) for x in batch]
 
-        if len(texts) == 0:
+        if not texts:
             return []
 
         encoded = [self.encode(text) for text in texts]
