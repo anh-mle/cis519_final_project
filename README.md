@@ -22,16 +22,11 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 
 ```
 ├── README.md                         # Project overview and instructions
-├── report.md                         # Final project report
 ├── model.py                          # DistilBERT classifier (final model)
 ├── preprocess.py                     # URL slug preprocessing + prepare_data()
 ├── eval_project_b.py                 # Course evaluation script
 ├── model.pt                          # Trained DistilBERT weights
 ├── training_script.ipynb             # DistilBERT training notebook
-├── acc_curves.png                    # Training accuracy curves
-├── loss_curves.png                   # Training loss curves
-├── confusion.png                     # Confusion matrix
-├── comparison.png                    # Model comparison visualization
 └── data/
     ├── combined_url_balanced_8k.csv  # Final dataset (8k URLs, balanced)
     └── url_only_data.csv             # Provided dataset
