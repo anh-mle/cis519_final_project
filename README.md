@@ -20,17 +20,20 @@ Leaderboard: [HuggingFace Spaces](https://huggingface.co/spaces/cis4190/NewsHead
 ## Repository Structure
 
 ```
-├── model.py                         # DistilBERT classifier
-├── preprocess.py                    # URL slug extraction + prepare_data()
-├── eval_project_b.py                # Course evaluation script
-├── model.pt                         # Trained model weights
-├── News_Classifier_Training.ipynb   # Training notebook (Google Colab)
-├── scripts/
-│   └── build_dataset.py             # Sitemap crawler for dataset construction
+├── README.md                         # Project overview and instructions
+├── report.md                         # Final project report
+├── model.py                          # DistilBERT classifier (final model)
+├── preprocess.py                     # URL slug preprocessing + prepare_data()
+├── eval_project_b.py                 # Course evaluation script
+├── model.pt                          # Trained DistilBERT weights
+├── training_script.ipynb             # DistilBERT training notebook
+├── acc_curves.png                    # Training accuracy curves
+├── loss_curves.png                   # Training loss curves
+├── confusion.png                     # Confusion matrix
+├── comparison.png                    # Model comparison visualization
 └── data/
-    ├── combined_url_balanced_8k.xlsx # Training corpus (8k URLs, 4k per source)
-    ├── headlines_scraped.csv         # Pre-scraped article headlines (3.8k)
-    └── url_only_data.csv            # Reference evaluation dataset
+    ├── combined_url_balanced_8k.csv # Final dataset (8k URLs, balanced)
+    └── url_only_data.csv            # Provided dataset
 ```
 
 ---
@@ -50,7 +53,9 @@ Embedding (vocab × 128) → SpatialDropout(p=0.40) → Bidirectional LSTM — 3
 ```
 
 ### Bidirectional GRU
-[Todo: Tiffany]
+```
+Tokenized URL Slugs → Embedding (vocab × 128) → SpatialDropout → BiGRU → Mean Pooling → Linear Classifier
+```
 
 ### Logistic Regression (baseline)
 ```
